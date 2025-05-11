@@ -1,0 +1,40 @@
+// BAD - connection never closed
+db, err := sql.Open("sqlite3", "database.db")
+if err != nil {
+    log.Fatal(err)
+}
+
+// GOOD - using defer to ensure connection is closed
+db, err := sql.Open("sqlite3", "database.db")
+if err != nil {
+    log.Fatal(err)
+}
+defer db.Close()
+
+// BAD - no transaction for multiple operations
+db.Exec("DELETE FROM word_review_items")
+db.Exec("DELETE FROM study_sessions") // If this fails, word_review_items are already deleted!
+
+// GOOD - using transaction
+tx, err := db.Begin()
+if err != nil {
+    return err
+}
+defer tx.Rollback() // Rollback if something goes wrong
+
+if _, err := tx.Exec("DELETE FROM word_review_items"); err != nil {
+    return err
+}
+if _, err := tx.Exec("DELETE FROM study_sessions"); err != nil {
+    return err
+}
+
+return tx.Commit()
+
+// BAD - SQL injection vulnerability
+name := getUserInput()
+db.Query("SELECT * FROM users WHERE name = " + name)
+
+// GOOD - using prepared statement
+name := getUserInput()
+db.Query("SELECT * FROM users WHERE name = ?", name) 
