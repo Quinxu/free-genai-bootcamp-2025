@@ -1,24 +1,47 @@
 # Backend Server Technical Specs
 
 ## Business Goal 
-Andrew's application will do the following:
-- A language learning school wants to build a prototype of learning portal which will act as three things:
+A language learning school wants to build a prototype of learning portal which will act as three things:
 - Inventory of possible vocabulary that can be learned, 
 - Act as a  Learning record store (LRS), providing correct and wrong score on practice vocabulary
 - A unified launchpad to launch different learning apps.
  
-My application will do the following:
+<!--My application will do the following:
 - learn a language by providing an english setence, then ask the user to provide the corresponding sentence in the target language.
 - With help function, the application provides the sentence structure in the target language, and the likely used words.
-- After an user enteres the sentence, the application will provide the feedback on the correct and wrong words. 
+- After an user enteres the sentence, the application will provide the feedback on the correct and wrong words. -->
 
 ## Technical Requirements
 - The backend will be built using Go
 - The database will be SQLite3
 - The API will be built using Gin
+- Mage is a task runner for Go.
 - The API will always return JSON
 - There will be no authentication or authorization
 - evething will be treated as a single user
+
+## Directory Structure
+backend_go/
+├── cmd/                    # Application entry points
+│   └── server/            # Main server application
+│       └── main.go        # Server entry point
+├── internal/              # Private application code
+│   ├── api/              # API handlers and routes
+│   │   └── handlers/     # Request handlers
+│   ├── models/           # Database models
+│   ├── database/         # Database connection and migrations
+│   │   └── migrations/   # SQL migration files
+│   │   └── seeds/        # SQL seed files for initial data population
+│   └── service/          # Business logic
+├── pkg/                  # Public packages that could be used by other projects
+├── configs/              # Configuration files
+├── scripts/             # Build and maintenance scripts
+├── test/                # Additional test files
+├── go.mod              # Go module definition
+├── go.sum              # Go module checksums
+├── words.db            # SQLite database (as specified)
+├── Magefile.go         # Mage task definitions
+└── README.md           # Project documentation
 
 ## Database schema
 
@@ -393,9 +416,8 @@ Returns paginated study sessions for a given activity.
 }
 ```
 
-## Mage Tasks
+## Task RunnerTasks
 
-Mage is a task runner for Go.
 Let's list out possible tasks we need for our lang portal.
 
 ### Initialize Database
