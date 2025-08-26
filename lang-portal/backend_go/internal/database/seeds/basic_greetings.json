@@ -1,0 +1,33 @@
+{
+  "groups": [
+    {
+      "name": "Basic Greetings",
+      "words": [
+        {
+          "chinese": "你好",
+          "english": "Hello",
+          "parts": {
+            "pinyin": "nǐ hǎo",
+            "literal": "you good"
+          }
+        },
+        {
+          "chinese": "早上好",
+          "english": "Good morning",
+          "parts": {
+            "pinyin": "zǎo shang hǎo",
+            "literal": "morning good"
+          }
+        },
+        {
+          "chinese": "再见",
+          "english": "Goodbye",
+          "parts": {
+            "pinyin": "zài jiàn",
+            "literal": "again see"
+          }
+        }
+      ]
+    }
+  ]
+}

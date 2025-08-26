@@ -1,76 +1,52 @@
 package main
 
 import (
+	"database/sql"
 	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"lang-portal/internal/handlers"
-	"lang-portal/internal/middleware"
-	"lang-portal/internal/models"
+
+	"lang-portal/internal/api/handlers"
 	"lang-portal/internal/service"
 )
 
-func main() {
-	// Get database path from environment variable or use default
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = filepath.Join(".", "words.db")
-	}
-	dbDir := filepath.Dir(dbPath)
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
-		log.Fatal("Failed to create database directory:", err)
-	}
-
-	// Initialize database
-	db, err := models.NewDB(dbPath)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
-	}
-	defer db.Close()
-
-
-	// Initialize services
-	dashboardService := service.NewDashboardService(db)
-	wordService := service.NewWordService(db)
-	groupsService := service.NewGroupsService(db)
-	studyActivitiesService := service.NewStudyActivitiesService(db)
-	studySessionsService := service.NewStudySessionsService(db)
-
-	// Initialize handlers
-	h := handlers.NewHandlers(
-		dashboardService,
-		wordService,
-		groupsService,
-		studyActivitiesService,
-		studySessionsService,
-	)
-
-	// Create Gin router
+func setupRouter() *gin.Engine {
 	r := gin.Default()
 
-	// Add middleware
-	r.Use(middleware.ErrorHandler())
+	// Initialize database
+	db, err := sql.Open("sqlite3", "./data/lang_portal.db")
+	if err != nil {
+		log.Fatal("Failed to open database:", err)
+	}
 
-	// Enable CORS
-	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	// Initialize services with database connection
+	studyService := service.NewStudyService(db)
+	groupService := service.NewGroupService(db)
+	wordService := service.NewWordService(db)
 
-	// Register routes
-	h.RegisterRoutes(r)
+	// Initialize handlers
+	studyHandler := handlers.NewStudyHandler(studyService)
+	groupHandler := handlers.NewGroupHandler(groupService)
+	wordHandler := handlers.NewWordHandler(wordService)
 
-	log.Printf("Server starting on http://localhost:8081")
-	if err := r.Run(":8081"); err != nil {
+	// Setup route groups
+	api := r.Group("/api")
+	{
+		// Register routes using handler methods
+		studyHandler.RegisterRoutes(api)
+		groupHandler.RegisterRoutes(api)
+		wordHandler.RegisterRoutes(api)
+	}
+
+	return r
+}
+
+func main() {
+	r := setupRouter()
+
+	// Start server
+	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }
